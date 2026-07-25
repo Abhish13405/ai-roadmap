@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traverse — plan what to learn next</title>
+    <meta name="description" content="Generate a step-by-step learning roadmap for any topic and track your progress.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg: #faf9f5;
+            --surface: #ffffff;
+            --border: #e6e4dd;
+            --border-strong: #d1cec2;
+            --text: #3d3929;
+            --text-muted: #7c7666;
+            --text-faint: #a39d8a;
+            --accent: #c96442;
+            --accent-strong: #b1522f;
+            --accent-tint: #f3e9e3;
+            --warn: #b3452c;
+            --warn-tint: #f8ece7;
+            --radius: 12px;
+            --radius-sm: 8px;
+            --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+            --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+        }
+
+        [data-theme="dark"] {
+            --bg: #262624;
+            --surface: #30302e;
+            --border: #43423e;
+            --border-strong: #57564f;
+            --text: #eae6dc;
+            --text-muted: #a8a396;
+            --text-faint: #7c7869;
+            --accent: #da7756;
+            --accent-strong: #e8916d;
+            --accent-tint: #3d322a;
+            --warn: #d97b60;
+            --warn-tint: #3a2a24;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { color-scheme: light; }
+        [data-theme="dark"] { color-scheme: dark; }
+
+        body {
+            font-family: var(--font-ui);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.5;
+            font-size: 15px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+        }
+
+        a { color: inherit; }
+
+        .container {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem 4rem;
+        }
+
+        /* Top bar */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 1.1rem 1.5rem 0;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.9rem;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            font-weight: 700;
+            font-size: 0.95rem;
+            letter-spacing: -0.01em;
+        }
+
+        .brand-mark {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            background: var(--accent);
+            display: grid;
+            place-items: center;
+        }
+
+        .brand-mark svg { width: 12px; height: 12px; }
+        [data-theme="dark"] .brand-mark svg { stroke: #000000; }
+
+        .top-actions { display: flex; align-items: center; gap: 0.5rem; }
+
+        .icon-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-muted);
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: border-color 0.15s ease, color 0.15s ease;
+        }
+
+        .icon-btn:hover { border-color: var(--text); color: var(--text); }
+
+        .text-btn {
+            height: 32px;
+            padding: 0 0.85rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: border-color 0.15s ease, color 0.15s ease;
+        }
+
+        .text-btn:hover { border-color: var(--text); color: var(--text); }
+
+        /* Header */
+        header { margin-bottom: 2rem; }
+
+        .eyebrow {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 0.55rem;
+        }
+
+        h1 {
+            font-family: var(--font-serif);
+            font-size: clamp(1.7rem, 4vw, 2.2rem);
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            margin-bottom: 0.55rem;
+            color: var(--text);
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            max-width: 46ch;
+        }
+
+        /* Card */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.4rem;
+            margin-bottom: 1.4rem;
+        }
+
+        .field-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.6rem;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 0.6rem;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            width: 100%;
+            padding: 0.65rem 0.8rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.92rem;
+            font-family: inherit;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.15s ease;
+        }
+
+        input[type="text"]:focus-visible {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-tint);
+        }
+
+        input[type="text"]::placeholder { color: var(--text-faint); }
+
+        .btn {
+            padding: 0.65rem 1.1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+            transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+        }
+
+        .btn:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+        .btn-primary { background: var(--accent); color: #fdfaf6; border-color: var(--accent); }
+        .btn-primary:hover { opacity: 0.85; }
+        .btn-primary:disabled { opacity: 0.5; cursor: default; }
+
+        .btn-outline {
+            background: var(--surface);
+            border-color: var(--border);
+            color: var(--text);
+        }
+        .btn-outline:hover { border-color: var(--text); background: var(--accent-tint); }
+
+        /* Chips */
+        .chips {
+            margin-top: 1.1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+            align-items: center;
+        }
+
+        .chips-label {
+            font-size: 0.8rem;
+            color: var(--text-faint);
+            margin-right: 0.15rem;
+        }
+
+        .chip {
+            padding: 0.35rem 0.75rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: border-color 0.15s ease, color 0.15s ease;
+        }
+
+        .chip:hover { border-color: var(--text); color: var(--text); }
+
+        /* Loader */
+        .loader-wrapper {
+            display: none;
+            align-items: center;
+            gap: 0.7rem;
+            padding: 1rem 0 0.2rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .error-card {
+            display: none;
+            background: var(--warn-tint);
+            border: 1px solid var(--warn);
+            border-radius: var(--radius-sm);
+            padding: 0.75rem 1rem;
+            color: var(--warn);
+            margin-top: 0.9rem;
+            font-size: 0.88rem;
+        }
+
+        /* Roadmap section */
+        .roadmap-section { display: none; }
+
+        .roadmap-meta-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.9rem;
+        }
+
+        .roadmap-topic-title {
+            font-family: var(--font-serif);
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .model-badge {
+            font-size: 0.74rem;
+            color: var(--text-faint);
+            font-family: var(--font-mono);
+        }
+
+        /* Progress */
+        .progress-box { margin-bottom: 1.4rem; }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.83rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-track {
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--accent);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        /* Toolbar */
+        .roadmap-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.7rem;
+            margin-bottom: 1.3rem;
+        }
+
+        .roadmap-search { position: relative; max-width: 260px; width: 100%; }
+
+        .roadmap-search input {
+            padding: 0.5rem 0.7rem 0.5rem 2.1rem;
+            font-size: 0.85rem;
+        }
+
+        .roadmap-search i {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-faint);
+            font-size: 0.78rem;
+        }
+
+        .action-group { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+
+        .action-group .btn { padding: 0.5rem 0.75rem; font-size: 0.8rem; font-weight: 500; }
+
+        /* Timeline */
+        .timeline-container { position: relative; padding-left: 1.4rem; }
+
+        .timeline-container::before {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 8px;
+            bottom: 8px;
+            width: 2px;
+            background: var(--border);
+        }
+
+        .timeline-node {
+            position: relative;
+            margin-bottom: 0.6rem;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: -1.4rem;
+            top: 0.85rem;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 2px solid var(--border-strong);
+        }
+
+        .timeline-node.completed .timeline-marker {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .node-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            padding: 0.7rem 0.2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .node-title {
+            font-weight: 700;
+            font-size: 0.98rem;
+            color: var(--text);
+        }
+
+        .node-toggle-icon {
+            font-size: 0.75rem;
+            color: var(--text-faint);
+            transition: transform 0.2s ease;
+        }
+
+        .timeline-node.collapsed .node-toggle-icon { transform: rotate(-90deg); }
+
+        .node-content { padding: 0.6rem 0.2rem 0.9rem; }
+
+        .timeline-node.collapsed .node-content { display: none; }
+
+        .milestone-list { list-style: none; display: flex; flex-direction: column; gap: 0.15rem; }
+
+        .milestone-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.65rem;
+            padding: 0.4rem 0.3rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: background 0.12s ease;
+        }
+
+        .milestone-item:hover { background: var(--accent-tint); }
+
+        .custom-cb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border: 1.5px solid var(--border-strong);
+            border-radius: 3px;
+            background: var(--surface);
+            cursor: pointer;
+            margin-top: 0.15rem;
+            display: grid;
+            place-content: center;
+            flex-shrink: 0;
+        }
+
+        .custom-cb::before {
+            content: "\f00c";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            font-size: 9px;
+            color: var(--bg);
+            transform: scale(0);
+            transition: transform 0.1s ease;
+        }
+
+        .custom-cb:checked { background: var(--accent); border-color: var(--accent); }
+        .custom-cb:checked::before { transform: scale(1); }
+
+        .milestone-text { font-size: 0.92rem; color: var(--text); }
+
+        .milestone-item.checked .milestone-text { color: var(--text-faint); text-decoration: line-through; }
+
+        code {
+            background: var(--accent-tint);
+            padding: 0.1rem 0.35rem;
+            border-radius: 3px;
+            font-family: var(--font-mono);
+            font-size: 0.85em;
+            color: var(--text);
+        }
+
+        .raw-content {
+            display: none;
+            background: var(--accent-tint);
+            padding: 1.1rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .modal-body {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 460px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title { font-weight: 700; font-size: 1rem; }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--text-faint);
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .close-btn:hover { color: var(--text); }
+
+        .modal-content-area { padding: 1.25rem; overflow-y: auto; }
+
+        .history-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+        .history-item {
+            padding: 0.75rem 0.9rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: border-color 0.15s ease;
+        }
+
+        .history-item:hover { border-color: var(--text); }
+
+        .history-item-title { font-weight: 600; font-size: 0.9rem; }
+        .history-item-date { font-size: 0.78rem; color: var(--text-faint); }
+        .empty-note { color: var(--text-faint); text-align: center; font-size: 0.88rem; padding: 1rem 0; }
+
+        .rating-stars { display: flex; justify-content: center; gap: 0.6rem; margin: 1.3rem 0; }
+
+        .star-icon {
+            font-size: 1.5rem;
+            color: var(--border-strong);
+            cursor: pointer;
+            transition: color 0.15s ease;
+        }
+
+        .star-icon:hover, .star-icon.active { color: var(--accent); }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 22px;
+            right: 22px;
+            background: var(--text);
+            color: var(--bg);
+            padding: 0.65rem 1.1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            z-index: 2000;
+            transform: translateY(12px);
+            opacity: 0;
+            transition: all 0.2s ease;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .toast.show { transform: translateY(0); opacity: 1; }
+
+        footer {
+            text-align: center;
+            padding: 1.5rem 0 0;
+            color: var(--text-faint);
+            font-size: 0.82rem;
+        }
+
+        @media (max-width: 640px) {
+            .container { padding: 1.75rem 1.1rem 3rem; }
+            .topbar { padding: 1rem 1.1rem 0; }
+            .input-row { flex-direction: column; }
+            .roadmap-toolbar { flex-direction: column; align-items: stretch; }
+            .roadmap-search { max-width: 100%; }
+            .action-group .btn { flex: 1; }
+        }
+    </style>
+</head>
+<body data-theme="light">
+
+    <div class="topbar">
+        <div class="brand">
+            <span class="brand-mark">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round"><path d="M4 12 L20 12 M13 5 L20 12 L13 19"/></svg>
+            </span>
+            Traverse
+        </div>
+        <div class="top-actions">
+            <button class="text-btn" id="open-history-btn"><i class="fas fa-clock-rotate-left"></i> Saved</button>
+            <button class="icon-btn" id="theme-toggle" title="Toggle dark mode"><i class="fas fa-moon"></i></button>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="eyebrow">Learning paths</div>
+            <h1>Plan what to learn next</h1>
+            <p class="subtitle">Type a topic, get a clear set of steps, and check them off as you go.</p>
+        </header>
+
+        <div class="card">
+            <div class="field-label">What do you want to learn?</div>
+            <div class="input-row">
+                <input type="text" id="interest-input" placeholder="e.g. Machine learning, full-stack web dev, cybersecurity…" autocomplete="off">
+                <button class="btn btn-primary" id="generate-btn">Generate</button>
+            </div>
+
+            <div class="loader-wrapper" id="loader">
+                <div class="spinner"></div>
+                <span id="loading-status">Putting the roadmap together…</span>
+            </div>
+
+            <div class="error-card" id="error-message"></div>
+        </div>
+
+        <div class="card roadmap-section" id="roadmap-section">
+            <div class="roadmap-meta-header">
+                <div class="roadmap-topic-title" id="roadmap-topic-display">Learning roadmap</div>
+                <div class="model-badge" id="model-badge"></div>
+            </div>
+
+            <div class="progress-box">
+                <div class="progress-info">
+                    <span>Progress</span>
+                    <span id="progress-text">0% complete</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+            </div>
+
+            <div class="roadmap-toolbar">
+                <div class="roadmap-search">
+                    <i class="fas fa-magnifying-glass"></i>
+                    <input type="text" id="filter-input" placeholder="Filter steps…">
+                </div>
+                <div class="action-group">
+                    <button class="btn btn-outline" id="copy-btn"><i class="fas fa-copy"></i> Copy</button>
+                    <button class="btn btn-outline" id="download-btn"><i class="fas fa-download"></i> Save</button>
+                    <button class="btn btn-outline" id="toggle-view-btn"><i class="fas fa-code"></i> Raw</button>
+                    <button class="btn btn-outline" id="rate-modal-btn"><i class="fas fa-star"></i> Rate</button>
+                </div>
+            </div>
+
+            <div id="timeline-view" class="timeline-container"></div>
+            <div id="raw-view" class="raw-content"></div>
+        </div>
+
+        <footer>
+            <p>Built by Abhishek</p>
+        </footer>
+    </div>
+
+    <!-- Rating Modal -->
+    <div class="modal-overlay" id="rating-modal">
+        <div class="modal-body">
+            <div class="modal-header">
+                <div class="modal-title">Rate this roadmap</div>
+                <button class="close-btn" id="close-rating-modal">&times;</button>
+            </div>
+            <div class="modal-content-area" style="text-align: center;">
+                <p style="color: var(--text-muted); font-size: 0.9rem;">How helpful was this for your goals?</p>
+                <div class="rating-stars" id="star-rating-box">
+                    <i class="fas fa-star star-icon" data-rating="1"></i>
+                    <i class="fas fa-star star-icon" data-rating="2"></i>
+                    <i class="fas fa-star star-icon" data-rating="3"></i>
+                    <i class="fas fa-star star-icon" data-rating="4"></i>
+                    <i class="fas fa-star star-icon" data-rating="5"></i>
+                </div>
+                <button class="btn btn-primary" id="submit-rating-btn" style="width: 100%;">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div class="modal-overlay" id="history-modal">
+        <div class="modal-body">
+            <div class="modal-header">
+                <div class="modal-title">Saved roadmaps</div>
+                <button class="close-btn" id="close-history-modal">&times;</button>
+            </div>
+            <div class="modal-content-area">
+                <div class="history-list" id="history-items-container">
+                    <p class="empty-note">Nothing saved yet — generate a roadmap first.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">
+        <i class="fas fa-check" id="toast-icon"></i>
+        <span id="toast-message">Notification</span>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const interestInput = document.getElementById('interest-input');
+            const generateBtn = document.getElementById('generate-btn');
+            const loader = document.getElementById('loader');
+            const errorMessage = document.getElementById('error-message');
+            const roadmapSection = document.getElementById('roadmap-section');
+            const roadmapTopicDisplay = document.getElementById('roadmap-topic-display');
+            const modelBadge = document.getElementById('model-badge');
+            const timelineView = document.getElementById('timeline-view');
+            const rawView = document.getElementById('raw-view');
+            const filterInput = document.getElementById('filter-input');
+            const progressFill = document.getElementById('progress-fill');
+            const progressText = document.getElementById('progress-text');
+            const copyBtn = document.getElementById('copy-btn');
+            const downloadBtn = document.getElementById('download-btn');
+            const toggleViewBtn = document.getElementById('toggle-view-btn');
+            const rateModalBtn = document.getElementById('rate-modal-btn');
+            const ratingModal = document.getElementById('rating-modal');
+            const closeRatingModal = document.getElementById('close-rating-modal');
+            const submitRatingBtn = document.getElementById('submit-rating-btn');
+            const openHistoryBtn = document.getElementById('open-history-btn');
+            const historyModal = document.getElementById('history-modal');
+            const closeHistoryModal = document.getElementById('close-history-modal');
+            const historyItemsContainer = document.getElementById('history-items-container');
+            const themeToggle = document.getElementById('theme-toggle');
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            const toastIcon = document.getElementById('toast-icon');
+
+            let currentRoadmapText = '';
+            let currentTopic = '';
+            let isRawView = false;
+            let currentRating = 0;
+
+            // --- Theme (light/dark only) ---
+            const savedTheme = localStorage.getItem('app_theme') || 'light';
+            applyTheme(savedTheme);
+
+            function applyTheme(theme) {
+                document.body.setAttribute('data-theme', theme);
+                themeToggle.innerHTML = theme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+                localStorage.setItem('app_theme', theme);
+            }
+
+            themeToggle.addEventListener('click', () => {
+                const current = document.body.getAttribute('data-theme');
+                applyTheme(current === 'dark' ? 'light' : 'dark');
+            });
+
+            function showToast(msg, iconClass = 'fa-check') {
+                toastMessage.textContent = msg;
+                toastIcon.className = `fas ${iconClass}`;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2500);
+            }
+
+            generateBtn.addEventListener('click', generateRoadmap);
+            interestInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') generateBtn.click();
+            });
+
+            async function generateRoadmap() {
+                const topic = interestInput.value.trim();
+                if (!topic) {
+                    showError('Enter a topic first.');
+                    return;
+                }
+
+                clearError();
+                showLoading(true);
+
+                try {
+                    const response = await fetch('/generate_roadmap', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: `interest=${encodeURIComponent(topic)}`
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok || data.error) {
+                        throw new Error(data.error || data.details || 'Could not generate a roadmap. Try again.');
+                    }
+
+                    currentRoadmapText = data.roadmap;
+                    currentTopic = topic;
+
+                    roadmapTopicDisplay.textContent = topic;
+                    modelBadge.textContent = data.model_used || '';
+
+                    rawView.textContent = currentRoadmapText;
+                    renderTimeline(currentRoadmapText);
+
+                    roadmapSection.style.display = 'block';
+                    roadmapSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                    saveToHistory(topic, currentRoadmapText);
+                    showToast('Roadmap saved');
+
+                } catch (err) {
+                    console.error(err);
+                    showError(err.message || 'Something went wrong. Please try again.');
+                } finally {
+                    showLoading(false);
+                }
+            }
+
+            function renderTimeline(text) {
+                timelineView.innerHTML = '';
+
+                const lines = text.split('\n');
+                let currentSectionNode = null;
+                let currentUl = null;
+                let nodeIndex = 0;
+
+                lines.forEach((line) => {
+                    const trimmed = line.trim();
+                    if (!trimmed) return;
+
+                    if (trimmed.startsWith('#') || trimmed.match(/^(Phase|Step|Module|Level|Week|Month|\d+\.)/i)) {
+                        nodeIndex++;
+                        const titleText = trimmed.replace(/^#+\s*/, '');
+
+                        currentSectionNode = document.createElement('div');
+                        currentSectionNode.className = 'timeline-node';
+                        currentSectionNode.setAttribute('data-node-id', nodeIndex);
+
+                        currentSectionNode.innerHTML = `
+                            <div class="timeline-marker"></div>
+                            <div class="node-header">
+                                <div class="node-title">${escapeHtml(titleText)}</div>
+                                <i class="fas fa-chevron-down node-toggle-icon"></i>
+                            </div>
+                            <div class="node-content">
+                                <ul class="milestone-list"></ul>
+                            </div>
+                        `;
+
+                        const headerEl = currentSectionNode.querySelector('.node-header');
+                        headerEl.addEventListener('click', () => {
+                            currentSectionNode.classList.toggle('collapsed');
+                        });
+
+                        timelineView.appendChild(currentSectionNode);
+                        currentUl = currentSectionNode.querySelector('.milestone-list');
+                    } else if (trimmed.startsWith('-') || trimmed.startsWith('*') || trimmed.match(/^\d+[\.\)]/)) {
+                        const bulletText = trimmed.replace(/^[-*\d\.\)]+\s*/, '');
+
+                        if (!currentUl) {
+                            currentSectionNode = document.createElement('div');
+                            currentSectionNode.className = 'timeline-node';
+                            currentSectionNode.innerHTML = `
+                                <div class="timeline-marker"></div>
+                                <div class="node-header">
+                                    <div class="node-title">Key steps</div>
+                                </div>
+                                <div class="node-content"><ul class="milestone-list"></ul></div>
+                            `;
+                            timelineView.appendChild(currentSectionNode);
+                            currentUl = currentSectionNode.querySelector('.milestone-list');
+                        }
+
+                        const li = document.createElement('li');
+                        li.className = 'milestone-item';
+                        li.innerHTML = `
+                            <input type="checkbox" class="custom-cb">
+                            <span class="milestone-text">${formatMarkdownText(bulletText)}</span>
+                        `;
+
+                        const cb = li.querySelector('.custom-cb');
+                        li.addEventListener('click', (e) => {
+                            if (e.target !== cb) cb.checked = !cb.checked;
+                            li.classList.toggle('checked', cb.checked);
+                            updateProgress();
+                        });
+
+                        currentUl.appendChild(li);
+                    } else {
+                        if (currentSectionNode) {
+                            const contentDiv = currentSectionNode.querySelector('.node-content');
+                            const p = document.createElement('p');
+                            p.style.fontSize = '0.9rem';
+                            p.style.color = 'var(--text-muted)';
+                            p.style.marginBottom = '0.5rem';
+                            p.innerHTML = formatMarkdownText(trimmed);
+                            contentDiv.insertBefore(p, currentUl);
+                        }
+                    }
+                });
+
+                if (timelineView.children.length === 0) {
+                    timelineView.innerHTML = `<div class="raw-content" style="display:block;">${escapeHtml(text)}</div>`;
+                }
+
+                updateProgress();
+            }
+
+            function updateProgress() {
+                const total = document.querySelectorAll('.custom-cb').length;
+                const checked = document.querySelectorAll('.custom-cb:checked').length;
+                const percent = total > 0 ? Math.round((checked / total) * 100) : 0;
+
+                progressFill.style.width = `${percent}%`;
+                progressText.textContent = `${percent}% complete (${checked}/${total})`;
+
+                document.querySelectorAll('.timeline-node').forEach(node => {
+                    const nodeCbs = node.querySelectorAll('.custom-cb');
+                    const nodeChecked = node.querySelectorAll('.custom-cb:checked');
+                    if (nodeCbs.length > 0 && nodeCbs.length === nodeChecked.length) {
+                        node.classList.add('completed');
+                    } else {
+                        node.classList.remove('completed');
+                    }
+                });
+            }
+
+            filterInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase().trim();
+                const nodes = document.querySelectorAll('.timeline-node');
+
+                nodes.forEach(node => {
+                    const text = node.textContent.toLowerCase();
+                    node.style.display = (!query || text.includes(query)) ? 'block' : 'none';
+                });
+            });
+
+            copyBtn.addEventListener('click', () => {
+                if (!currentRoadmapText) return;
+                navigator.clipboard.writeText(currentRoadmapText);
+                showToast('Copied to clipboard');
+            });
+
+            downloadBtn.addEventListener('click', () => {
+                if (!currentRoadmapText) return;
+                const blob = new Blob([currentRoadmapText], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Roadmap_${currentTopic.replace(/[^a-zA-Z0-9]/g, '_')}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('File saved');
+            });
+
+            toggleViewBtn.addEventListener('click', () => {
+                isRawView = !isRawView;
+                if (isRawView) {
+                    timelineView.style.display = 'none';
+                    rawView.style.display = 'block';
+                    toggleViewBtn.innerHTML = '<i class="fas fa-list"></i> Visual';
+                } else {
+                    rawView.style.display = 'none';
+                    timelineView.style.display = 'block';
+                    toggleViewBtn.innerHTML = '<i class="fas fa-code"></i> Raw';
+                }
+            });
+
+            function saveToHistory(topic, roadmap) {
+                let history = JSON.parse(localStorage.getItem('roadmap_history') || '[]');
+                history = history.filter(item => item.topic.toLowerCase() !== topic.toLowerCase());
+                history.unshift({ topic, roadmap, date: new Date().toLocaleDateString() });
+                if (history.length > 10) history.pop();
+                localStorage.setItem('roadmap_history', JSON.stringify(history));
+                renderHistoryModal();
+            }
+
+            function renderHistoryModal() {
+                const history = JSON.parse(localStorage.getItem('roadmap_history') || '[]');
+                if (history.length === 0) {
+                    historyItemsContainer.innerHTML = '<p class="empty-note">Nothing saved yet — generate a roadmap first.</p>';
+                    return;
+                }
+
+                historyItemsContainer.innerHTML = '';
+                history.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'history-item';
+                    div.innerHTML = `
+                        <div>
+                            <div class="history-item-title">${escapeHtml(item.topic)}</div>
+                            <div class="history-item-date">${item.date}</div>
+                        </div>
+                        <i class="fas fa-arrow-right" style="color: var(--text-faint);"></i>
+                    `;
+                    div.addEventListener('click', () => {
+                        currentRoadmapText = item.roadmap;
+                        currentTopic = item.topic;
+                        roadmapTopicDisplay.textContent = item.topic;
+                        rawView.textContent = currentRoadmapText;
+                        renderTimeline(currentRoadmapText);
+                        roadmapSection.style.display = 'block';
+                        historyModal.style.display = 'none';
+                        showToast(`Loaded "${item.topic}"`);
+                    });
+                    historyItemsContainer.appendChild(div);
+                });
+            }
+
+            openHistoryBtn.addEventListener('click', () => {
+                renderHistoryModal();
+                historyModal.style.display = 'flex';
+            });
+            closeHistoryModal.addEventListener('click', () => historyModal.style.display = 'none');
+
+            rateModalBtn.addEventListener('click', () => ratingModal.style.display = 'flex');
+            closeRatingModal.addEventListener('click', () => ratingModal.style.display = 'none');
+
+            const stars = document.querySelectorAll('.star-icon');
+            stars.forEach(star => {
+                star.addEventListener('click', () => {
+                    currentRating = parseInt(star.getAttribute('data-rating'));
+                    stars.forEach((s, idx) => s.classList.toggle('active', idx < currentRating));
+                });
+            });
+
+            submitRatingBtn.addEventListener('click', () => {
+                if (currentRating === 0) {
+                    showToast('Pick a star rating first', 'fa-triangle-exclamation');
+                    return;
+                }
+                showToast(`Thanks for the ${currentRating}-star rating`);
+                ratingModal.style.display = 'none';
+            });
+
+            window.addEventListener('click', (e) => {
+                if (e.target === ratingModal) ratingModal.style.display = 'none';
+                if (e.target === historyModal) historyModal.style.display = 'none';
+            });
+
+            function showLoading(show) {
+                loader.style.display = show ? 'flex' : 'none';
+                generateBtn.disabled = show;
+                generateBtn.textContent = show ? 'Generating…' : 'Generate';
+            }
+
+            function showError(msg) {
+                errorMessage.textContent = msg;
+                errorMessage.style.display = 'block';
+            }
+
+            function clearError() {
+                errorMessage.textContent = '';
+                errorMessage.style.display = 'none';
+            }
+
+            function escapeHtml(str) {
+                return str.replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+            }
+
+            function formatMarkdownText(str) {
+                let formatted = str.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                formatted = formatted.replace(/`(.*?)`/g, '<code>$1</code>');
+                return formatted;
+            }
+        });
+    </script>
+</body>
+</html>
